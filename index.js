@@ -33,8 +33,27 @@ async function run() {
     // await client.db("admin").command({ ping: 1 });
       
       
-      app.get('/biodatas', async (req, res) => {
-          const cursor = biodatas.find();
+    app.get('/biodatas', async (req, res) => {
+        
+      let queryobj = {};
+
+      const biodatatype = req.query.biodatatype; //(Male or Female)
+      const permanent_division_name = req.query.permanent_division_name; // (Dhaka, Barisal,Rongpur)
+      const role = req.query.role; // (Dhaka, Barisal,Rongpur)
+       
+        if (biodatatype) {
+            queryobj.biodatatype = biodatatype;
+        }
+
+        if (permanent_division_name) {
+            queryobj.permanent_division_name = permanent_division_name;
+        }
+      if (role) {
+          queryobj.role = role
+        }
+
+      
+          const cursor = biodatas.find(queryobj)
           const result = await cursor.toArray();
           res.send(result);
       })
