@@ -24,6 +24,7 @@ const client = new MongoClient(uri, {
 
       const database = client.db("destinyDuos");
       const biodatas = database.collection("biodatas");
+      const users = database.collection("users");
 
 async function run() {
   try {
@@ -56,7 +57,38 @@ async function run() {
           const cursor = biodatas.find(queryobj)
           const result = await cursor.toArray();
           res.send(result);
-      })
+    })
+    
+
+    app.get('/biodatas/count', async (req, res) => {
+       const totalBiodatasCount = await biodatas.countDocuments({});
+       const maleBiodatasCount = await biodatas.countDocuments({ biodatatype: 'Male' });
+       const femaleBiodatasCount = await biodatas.countDocuments({ biodatatype: 'Female' });
+
+       res.json({
+         totalBiodatasCount,
+         maleBiodatasCount,
+         femaleBiodatasCount,
+       });
+    })
+
+    app.put("/users", async (req, res) => {
+      const userBody = req.body;
+      const filter = { userEmail : userBody.email };
+      const options = { upsert: true }
+
+       const user = {
+         $set: {
+           userEmail: userBody.email,
+           userName: userBody.displayName,
+           userPhoto: userBody.photoURL,
+           role: userBody.role
+        }
+      }
+
+      const result = await users.updateOne(filter , user , options); 
+      res.send(result);
+    })
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
