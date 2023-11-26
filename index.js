@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
+const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY);
 
 app.use(cors());
 app.use(express.json()); 
@@ -26,6 +27,7 @@ const client = new MongoClient(uri, {
       const biodatas = database.collection("biodatas");
       const users = database.collection("users");
       const favourites = database.collection("favourites");
+      const contactRequest = database.collection("contactRequest");
 
 async function run() {
   try {
@@ -85,7 +87,6 @@ async function run() {
       const email = req.params.email
       const query = { contact_email: email};
       const result = await biodatas.findOne(query);
-      console.log(result);
       res.send(result)
     })
     
@@ -108,6 +109,8 @@ async function run() {
       const result = await users.findOne(query); 
         res.send(result)
     })
+
+
 
     app.put("/users", async (req, res) => {
       const userBody = req.body;
@@ -133,6 +136,43 @@ async function run() {
       res.send(result);
 
     })
+
+    app.post('/creatPayIntent', async (req, res) => {
+      const {price} = req.body;
+      const amount = parseInt(price) * 100;
+
+      if (!price || amount < 1) {
+        return
+      }
+
+      const {client_secret} = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types : ["card"]
+      })
+      res.send({clientSecret : client_secret})
+    })
+
+    app.post('/contactRequests', async (req, res) => {
+      const requestedBiodata = req.body;
+      const result = await contactRequest.insertOne(requestedBiodata);
+      res.send(result);
+    })
+
+    // app.patch('/biodata/status/:id', async (req, res) => {
+    //   const id = req.params.id;
+    //   const status = req.body.status;
+    //   const query = { biodataId: id };
+
+    //   const updatedBiodata = {
+    //     $set: {
+    //       status : status
+    //     }
+    //   }
+
+    //   const result = await biodatas.updateOne(query, updatedBiodata);
+    //   res.send(result);
+    // } )
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
