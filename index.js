@@ -25,6 +25,7 @@ const client = new MongoClient(uri, {
       const database = client.db("destinyDuos");
       const biodatas = database.collection("biodatas");
       const users = database.collection("users");
+      const favourites = database.collection("favourites");
 
 async function run() {
   try {
@@ -58,6 +59,35 @@ async function run() {
           const result = await cursor.toArray();
           res.send(result);
     })
+
+    app.get('/biodataDetails/:id', async(req, res) => {
+        const id = req.params.id
+        const query = { biodataId : parseInt(id) };
+        const biodata = await biodatas.findOne(query);
+      
+
+        if (biodata.biodatatype === "Male") {
+      
+        const query1 = { biodatatype : "Male" };
+        const others = await biodatas.find(query1).toArray();
+           res.send({biodata , others });
+      }
+      else { 
+        const query2 = { biodatatype : "Female" };
+          const others = await biodatas.find(query2).toArray();
+           res.send({biodata ,  others});
+      }
+
+     
+    })
+
+    app.get('/userBiodata/:email', async (req, res) => {
+      const email = req.params.email
+      const query = { contact_email: email};
+      const result = await biodatas.findOne(query);
+      console.log(result);
+      res.send(result)
+    })
     
 
     app.get('/biodatas/count', async (req, res) => {
@@ -70,6 +100,13 @@ async function run() {
          maleBiodatasCount,
          femaleBiodatasCount,
        });
+    })
+
+    app.get("/user/role/:email", async (req, res) => {
+        const email = req.params.email
+        const query = { userEmail : email };
+      const result = await users.findOne(query); 
+        res.send(result)
     })
 
     app.put("/users", async (req, res) => {
@@ -88,6 +125,13 @@ async function run() {
 
       const result = await users.updateOne(filter , user , options); 
       res.send(result);
+    })
+
+    app.post("/favourites", async (req, res) => {
+      const biodataItem = req.body;
+      const result = await favourites.insertOne(biodataItem);
+      res.send(result);
+
     })
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
