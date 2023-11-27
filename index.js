@@ -28,6 +28,7 @@ const client = new MongoClient(uri, {
       const users = database.collection("users");
       const favourites = database.collection("favourites");
       const contactRequest = database.collection("contactRequest");
+      const successStory = database.collection("successStory");
 
 async function run() {
   try {
@@ -133,6 +134,20 @@ async function run() {
       }
 
       const result = await users.updateOne(filter , user , options); 
+      res.send(result);
+    })
+    app.put("/addSuccessStory", async (req, res) => {
+      const story = req.body;
+      const filter = { userEmail : story.userEmail };
+      const options = { upsert: true }
+
+       const marriageStory = {
+         $set: {
+           ...story
+        }
+      }
+
+      const result = await successStory.updateOne(filter , marriageStory , options); 
       res.send(result);
     })
 
