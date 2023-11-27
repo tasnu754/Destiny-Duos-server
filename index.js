@@ -126,8 +126,50 @@ async function run() {
         }
       }
 
-      const result = await users.updateOne(filter , user , options); 
+      const result = await biodatas.updateOne(filter , user , options); 
       res.send(result);
+    })
+
+
+    app.put('/addBiodata', async (req, res) => {
+
+      const biodata = req.body;
+      const filter = { contact_email : biodata.contact_email}
+       
+      
+      const item = await biodatas.findOne(filter);
+      
+      let user ={}
+      if (item) {
+        const options = { upsert: true }
+
+         user = {
+         $set: {
+           ...biodata
+         }
+        }
+         const result = await biodatas.updateOne(filter , user , options); 
+         res.send(result);
+       
+      }
+      else {
+
+        const totalBiodatas = await biodatas.countDocuments({});
+        const biodataId = totalBiodatas + 1;
+
+         user = {
+           ...biodata,
+           biodataId
+        }
+
+        
+         const result = await biodatas.insertOne(user); 
+         res.send(result);
+      }
+
+      
+   
+      
     })
 
     app.post("/favourites", async (req, res) => {
@@ -159,7 +201,7 @@ async function run() {
       res.send(result);
     })
 
-    // app.patch('/biodata/status/:id', async (req, res) => {
+    // app.patch('/biodata/status/:id', async (req, res) => { 
     //   const id = req.params.id;
     //   const status = req.body.status;
     //   const query = { biodataId: id };
