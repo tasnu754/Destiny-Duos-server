@@ -102,11 +102,13 @@ async function run() {
        const totalBiodatasCount = await biodatas.countDocuments({});
        const maleBiodatasCount = await biodatas.countDocuments({ biodatatype: 'Male' });
        const femaleBiodatasCount = await biodatas.countDocuments({ biodatatype: 'Female' });
+       const successStoryCount = await successStory.countDocuments({ });
 
        res.json({
          totalBiodatasCount,
          maleBiodatasCount,
          femaleBiodatasCount,
+         successStoryCount
        });
     })
 
@@ -114,6 +116,10 @@ async function run() {
         const email = req.params.email
         const query = { userEmail : email };
       const result = await users.findOne(query); 
+        res.send(result)
+    })
+    app.get("/succesStory", async (req, res) => {
+      const result = await successStory.find().toArray(); 
         res.send(result)
     })
 
