@@ -102,13 +102,17 @@ async function run() {
        const totalBiodatasCount = await biodatas.countDocuments({});
        const maleBiodatasCount = await biodatas.countDocuments({ biodatatype: 'Male' });
        const femaleBiodatasCount = await biodatas.countDocuments({ biodatatype: 'Female' });
-       const successStoryCount = await successStory.countDocuments({ });
+       const premiumBiodataCount = await biodatas.countDocuments({ role: 'Premium' });
+       const successStoryCount = await successStory.countDocuments({});
+       const totalRevenue = successStoryCount*500
 
        res.json({
          totalBiodatasCount,
          maleBiodatasCount,
          femaleBiodatasCount,
-         successStoryCount
+         successStoryCount,
+         premiumBiodataCount,
+         totalRevenue
        });
     })
 
