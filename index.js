@@ -89,6 +89,12 @@ async function run() {
       const result = await biodatas.findOne(query);
       res.send(result)
     })
+    app.get('/userFavBiodatas/:email', async (req, res) => {
+      const email = req.params.email
+      const query = { userEmail: email};
+      const result = await favourites.find(query).toArray();
+      res.send(result)
+    })
     
 
     app.get('/biodatas/count', async (req, res) => {
@@ -114,19 +120,19 @@ async function run() {
 
     app.put("/users", async (req, res) => {
       const userBody = req.body;
-      const filter = { userEmail : userBody.email };
+      const filter = { userEmail : userBody.userEmail };
       const options = { upsert: true }
 
        const user = {
          $set: {
-           userEmail: userBody.email,
-           userName: userBody.displayName,
-           userPhoto: userBody.photoURL,
+           userEmail: userBody.userEmail,
+           userName: userBody.userName,
+           userPhoto: userBody.userPhoto,
            role: userBody.role
         }
       }
 
-      const result = await biodatas.updateOne(filter , user , options); 
+      const result = await users.updateOne(filter , user , options); 
       res.send(result);
     })
 
@@ -177,10 +183,10 @@ async function run() {
       const result = await favourites.insertOne(biodataItem);
       res.send(result);
 
-    })
-
+    }) 
+  
     app.post('/creatPayIntent', async (req, res) => {
-      const {price} = req.body;
+      const {price} = req.body; 
       const amount = parseInt(price) * 100;
 
       if (!price || amount < 1) {
