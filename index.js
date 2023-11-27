@@ -178,6 +178,14 @@ async function run() {
       
     })
 
+    app.delete('/deleteUserFavBiodata/:id', async (req, res) => {
+      const intId = req.params.id;
+      const id = parseInt(intId);
+       const query = { biodataId: id };
+       const result = await favourites.deleteOne(query); 
+       res.send(result);
+    })
+
     app.post("/favourites", async (req, res) => {
       const biodataItem = req.body;
       const result = await favourites.insertOne(biodataItem);
