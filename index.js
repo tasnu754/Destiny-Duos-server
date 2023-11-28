@@ -140,6 +140,13 @@ async function run() {
         res.send(result)
     })
 
+    app.get("/getUserContactRequests/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = {RequesterEmail : email}
+      const result = await contactRequest.find(query).toArray(); 
+        res.send(result)
+    })
+
 
 
     app.post("/users", async (req, res) => {
@@ -267,6 +274,13 @@ async function run() {
       const id = parseInt(intId);
        const query = { biodataId: id };
        const result = await favourites.deleteOne(query); 
+       res.send(result);
+    })
+    app.delete('/deleteUserContactReq/:id', async (req, res) => {
+      const intId = req.params.id;
+      
+       const query = { _id : new ObjectId(intId) };
+       const result = await contactRequest.deleteOne(query); 
        res.send(result);
     })
 
