@@ -10,7 +10,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.o9ylutr.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -114,38 +114,68 @@ async function run() {
          premiumBiodataCount,
          totalRevenue
        });
-    })
+    }) 
 
     app.get("/user/role/:email", async (req, res) => {
-        const email = req.params.email
+        const email = req.params.email;
         const query = { userEmail : email };
-      const result = await users.findOne(query); 
-        res.send(result)
-    })
+       const result = await users.findOne(query);
+        res.send(result) 
+    }) 
+
+
     app.get("/succesStory", async (req, res) => {
       const result = await successStory.find().toArray(); 
         res.send(result)
     })
 
+    app.get("/getusers", async (req, res) => {
+      const result = await users.find().toArray(); 
+        res.send(result)
+    })
 
 
-    app.put("/users", async (req, res) => {
+    app.get("/getContactRequests", async (req, res) => {
+      const result = await contactRequest.find().toArray(); 
+        res.send(result)
+    })
+
+
+
+    app.post("/users", async (req, res) => {
       const userBody = req.body;
       const filter = { userEmail : userBody.userEmail };
-      const options = { upsert: true }
+      // const options = { upsert: true }
 
-       const user = {
-         $set: {
-           userEmail: userBody.userEmail,
-           userName: userBody.userName,
-           userPhoto: userBody.userPhoto,
-           role: userBody.role
-        }
+      const isExist = await users.findOne(filter);
+      if (!isExist) {
+      //    const user = {
+      //    $set: {
+      //      userEmail: userBody.email,
+      //      userName: userBody.displayName,
+      //      userPhoto: userBody.photoURL,
+      //      role: userBody.role
+      //   }
+      // }
+
+          const result = await users.insertOne(userBody); 
+          res.send(result);
       }
 
-      const result = await users.updateOne(filter , user , options); 
-      res.send(result);
+      //  const user = {
+      //    $set: {
+      //      userEmail: userBody.email,
+      //      userName: userBody.displayName,
+      //      userPhoto: userBody.photoURL,
+      //      role: userBody.role
+      //   }
+      // }
+
+      // const result = await users.updateOne(filter , user , options); 
+      // res.send(result);
     })
+
+
     app.put("/addSuccessStory", async (req, res) => {
       const story = req.body;
       const filter = { userEmail : story.userEmail };
@@ -158,6 +188,35 @@ async function run() {
       }
 
       const result = await successStory.updateOne(filter , marriageStory , options); 
+      res.send(result);
+    })
+
+    app.patch("/changeRole/:userEmail", async (req, res) => {
+      const userRole = req.body;
+      const userEmail = req.params.userEmail;
+      const filter = { userEmail : userEmail };
+
+       const changeRole = {
+         $set: {
+           role: userRole.role
+        }
+      }
+
+      const result = await users.updateOne(filter , changeRole); 
+      res.send(result);
+    })
+
+    app.patch("/approveContact/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id : new ObjectId(id) };
+
+       const contactReq = {
+         $set: {
+           status: "approved"
+        }
+      }
+
+      const result = await contactRequest.updateOne(filter , contactReq); 
       res.send(result);
     })
 
