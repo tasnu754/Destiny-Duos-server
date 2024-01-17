@@ -7,7 +7,7 @@ const stripe = require('stripe')(process.env.PAYMENT_SECRET_KEY);
 
 app.use(cors());
 app.use(express.json()); 
-
+ 
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -32,11 +32,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
-    // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-      
+ 
       
     app.get('/biodatas', async (req, res) => {
         
@@ -58,7 +54,7 @@ async function run() {
         }
 
       
-          const cursor = biodatas.find(queryobj)
+          const cursor = biodatas.find(queryobj).sort({ views: -1 })
           const result = await cursor.toArray();
           res.send(result);
     })
@@ -225,6 +221,29 @@ async function run() {
 
       const result = await contactRequest.updateOne(filter , contactReq); 
       res.send(result);
+    })
+
+    app.patch("/updateViews/:id", async (req, res) => {
+
+      const id = req.params.id;
+      const {userEmail} = req.body;
+      const filter = { _id: new ObjectId(id) };
+
+      const Isbiodata = await biodatas.findOne(filter);
+
+      if (Isbiodata.followUsers.includes(userEmail)) {
+      
+          res.send({ message: "View not incremented. User has already viewed this biodata." });
+      } else {
+          const biodata = {
+            $inc: { views: 1 },
+            $push: { followUsers: userEmail },
+          }
+
+          const result = await biodatas.updateOne(filter , biodata); 
+          res.send(result);
+      }
+      
     })
 
 
